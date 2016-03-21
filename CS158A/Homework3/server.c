@@ -11,6 +11,10 @@
 int main(int argc, char *argv[])
 {
 
+	if (argc < 2){
+		printf("Error. Usage: ./server port");
+		exit(1);
+	}
    int socket_field, newsocket_field, serverlength, n;
    socklen_t clilength;
    struct sockaddr_un  cli_addr, serv_addr;
