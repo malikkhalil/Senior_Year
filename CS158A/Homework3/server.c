@@ -1,60 +1,48 @@
 
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
 #include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h>
 #include <stdlib.h>
+#include <sys/un.h>
+#include <string.h>
+#include <stdio.h>
 
 #define BUFFER_SIZE 200
+int main(int argc, char *argv[])
+{
 
-int main(int argc, char* argv[]){
-	//Make sure port is specified.
-	if (argc < 2){
-		printf("Missing port argument. Usage: ./server 9000\n");
-		exit(1);
-	}
-	int port = atoi(argv[1]);
-	char buffer[BUFFER_SIZE];
+   int socket_field, newsocket_field, serverlength, n;
+   socklen_t clilength;
+   struct sockaddr_un  cli_addr, serv_addr;
+   char buf[BUFFER_SIZE];
 
-	struct sockaddr_in serv_addr, cli_addr;
-	socklen_t size;
-	int sock;
-	sock = socket(AF_INET, SOCK_STREAM, 0);
-
-	if (sock < 0){
-		printf("error opening socket. will now quit.\n.");
-		exit(1);
-	}
-
-	bzero((char *) &serv_addr, sizeof(serv_addr));
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = INADDR_ANY;
-	serv_addr.sin_port = htons(port);
-	if (bind(sock, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
-	{
-		printf("error binding. exiting now.\n");
-		exit(1);
-	}
-	listen(sock, 2); //wait for connection
-	size = sizeof(cli_addr);
-	int newsock = accept(sock, (struct sockaddr *) &cli_addr, &size);
-	if (newsock < 0) 
-	{
-		printf("error accepting. exiting now. \n");
-		exit(1);
-	}
-	bzero(buffer, BUFFER_SIZE);
-	int result = read(newsock, buffer, BUFFER_SIZE-1);
-	if (result < 0)
-	{
-		printf("error reading from the socket. exiting now.\n");
-		exit(1);
-	}
-	printf("Message from client: %s", buffer);
-	close(newsock);
-	close(sock);
-	exit(0);
+   if ((socket_field = socket(AF_UNIX,SOCK_STREAM,0)) < 0)
+    {
+        printf("error creating socket. exiting now.\n");
+        exit(1);
+    }
+   bzero((char *) &serv_addr, sizeof(serv_addr));
+   serv_addr.sun_family = AF_UNIX;
+   strcpy(serv_addr.sun_path, argv[1]);
+   serverlength=strlen(serv_addr.sun_path) + sizeof(serv_addr.sun_family);
+   if(bind(socket_field,(struct sockaddr *)&serv_addr,serverlength)<0)
+    {
+        printf("error binding socket. exiting now.\n");
+        exit(1);
+    }
+   listen(socket_field,5);
+   clilength = sizeof(cli_addr);
+   newsocket_field = accept(socket_field,(struct sockaddr *)&cli_addr,&clilength);
+   if (newsocket_field < 0) 
+    {
+        printf("error accepting. exiting now.\n");
+        exit(1);
+    }
+   n=read(newsocket_field,buf,BUFFER_SIZE);
+   printf("%s\n", buf);
+   shutdown(newsocket_field, 2);
+   close(newsocket_field);
+   shutdown(socket_field, 2);
+   close(socket_field);
+   exit(0);
 }
