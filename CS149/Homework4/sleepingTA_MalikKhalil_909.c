@@ -42,7 +42,11 @@ for (i = 0; i < NUM_OF_STUDENTS; i++){
 for (i = 0; i < NUM_OF_STUDENTS; i++){
 	pthread_join(student_threads[i], NULL);
 }
+/* clean up resources */
 pthread_cancel(ta_thread_ptr);
+sem_destroy(&students_sem);
+sem_destroy(&ta_sem);
+
 printf("\n");
 return 0;
 
