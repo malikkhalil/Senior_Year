@@ -85,9 +85,9 @@ while (helps < NUM_OF_HELPS){
 	pthread_mutex_lock(&mutex_lock);
 
 	if (waiting_students < NUM_OF_SEATS){
+		sem_post(&students_sem);
 		waiting_students++;
 		pthread_mutex_unlock(&mutex_lock);
-		sem_post(&students_sem);
 		printf("\n\t\tStudent %d takes a seat, # of waiting students = %d", student_number, 
 			waiting_students);
 		sem_wait(&ta_sem);
