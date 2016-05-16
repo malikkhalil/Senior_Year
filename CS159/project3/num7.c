@@ -4,7 +4,7 @@ int main(){
 		int i;
 		int sum = 0;
 	omp_set_num_threads(8);
-			#pragma omp parallel for reduction(+: sum) private(i)
+			#pragma omp parallel for reduction(+: sum)
 			for (i = 0; i < 10; i++)
 			{
 				sum = sum + i;
